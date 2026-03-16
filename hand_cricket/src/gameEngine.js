@@ -75,6 +75,8 @@ export function createGameEngine() {
   // Special delivery state
   let isSpecialDelivery = false;
   let specialDeliveryType = '';
+  // Track if a special delivery has occurred in the current over
+  let specialDeliveryThisOver = false;
 
   function setTeams(t1, t2) {
     team1 = t1;
@@ -97,6 +99,7 @@ export function createGameEngine() {
     ballLog = [];
     isSpecialDelivery = false;
     specialDeliveryType = '';
+    specialDeliveryThisOver = false;
 
     scorecard = battingOrder.map((p) => ({
       name: p.name,
@@ -147,9 +150,12 @@ export function createGameEngine() {
 
   /**
    * Check if a special delivery triggers this ball.
+   * Max 1 per over.
    * Returns { isSpecial, type } where type = 'yorker' | 'bouncer' | null
    */
   function rollSpecialDelivery() {
+    if (specialDeliveryThisOver) return { isSpecial: false, type: null };
+
     const power = getCurrentBowlerPower();
     if (Math.random() < power.specialDeliveryChance) {
       const type = Math.random() < 0.5 ? 'yorker' : 'bouncer';
@@ -254,11 +260,17 @@ export function createGameEngine() {
     // Track over
     currentOverBalls.push({ runs, isOut, isIllegal, isSpecialDelivery: ballIsSpecial, bowlerName: bowler?.name || '' });
 
+    if (ballIsSpecial) {
+      specialDeliveryThisOver = true;
+    }
+
     if (currentOverBalls.length === 6) {
       overs.push({ over: overs.length + 1, balls: [...currentOverBalls] });
       currentOverBalls = [];
       // Rotate bowler
       currentBowlerIdx++;
+      // Reset special delivery counter for the new over
+      specialDeliveryThisOver = false;
     }
 
     // Handle out
