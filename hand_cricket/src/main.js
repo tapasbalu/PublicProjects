@@ -201,14 +201,17 @@ async function processBallOutcome(playerGesture, cpuGesture, result) {
 // =============================================
 // PLAY A SINGLE BALL
 // =============================================
-async function handlePlayBall() {
+async function handlePlayBall(fromSpacebar = false) {
   if (isProcessing) return;
   if (game.state !== 'BATTING' && game.state !== 'BOWLING') return;
 
   isProcessing = true;
   setPlayBallDisabled(true);
 
-  await runCountdown();
+  if (!fromSpacebar) {
+    await runCountdown();
+  }
+  
   const playerGesture = currentGesture === -1 ? 0 : currentGesture;
 
   if (isMultiplayer) {
@@ -307,7 +310,7 @@ function bindEvents() {
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && document.getElementById('game-screen').classList.contains('active')) {
       e.preventDefault();
-      handlePlayBall();
+      handlePlayBall(true);
     }
   });
 }

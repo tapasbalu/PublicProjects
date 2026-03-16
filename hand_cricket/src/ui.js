@@ -246,7 +246,7 @@ export function runCountdown() {
       void els.countdownText.offsetHeight;
       els.countdownText.style.animation = '';
       i++;
-      setTimeout(step, 700);
+      setTimeout(step, 350);
     }
     step();
   });

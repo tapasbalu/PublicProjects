@@ -28,8 +28,9 @@ export function initMultiplayer(options) {
   onBallResultCb = options.onBallResult;
   onOpponentLeftCb = options.onOpponentLeft;
 
-  // Assuming node server runs on same host, port 3001
-  socket = io('http://localhost:3001');
+  // Dynamically resolve the hostname so local network multiplayer works
+  const host = window.location.hostname;
+  socket = io(`http://${host}:3001`);
 
   socket.on('connect', () => {
     console.log('Connected to MP server', socket.id);
