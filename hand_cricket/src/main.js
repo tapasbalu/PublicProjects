@@ -255,6 +255,14 @@ function bindEvents() {
     });
   });
 
+  // Instructions Modal
+  document.getElementById('btn-how-to-play').addEventListener('click', () => {
+    document.getElementById('instructions-modal').classList.remove('hidden');
+  });
+  document.getElementById('btn-close-instructions').addEventListener('click', () => {
+    document.getElementById('instructions-modal').classList.add('hidden');
+  });
+
   // Toss
   els.btnToss.addEventListener('click', async () => {
     if (isMultiplayer) {
