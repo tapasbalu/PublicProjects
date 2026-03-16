@@ -28,9 +28,15 @@ export function initMultiplayer(options) {
   onBallResultCb = options.onBallResult;
   onOpponentLeftCb = options.onOpponentLeft;
 
-  // Dynamically resolve the hostname so local network multiplayer works
+  // Dynamically resolve the hostname so local network and production multiplayer works
   const host = window.location.hostname;
-  socket = io(`http://${host}:3001`);
+  if (host === 'localhost' || host === '127.0.0.1') {
+    // Local development: connect to Node.js backend on port 3001
+    socket = io(`http://${host}:3001`);
+  } else {
+    // Production (Render): Socket server running on the same domain/port
+    socket = io();
+  }
 
   socket.on('connect', () => {
     console.log('Connected to MP server', socket.id);
