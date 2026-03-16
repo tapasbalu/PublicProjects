@@ -160,9 +160,11 @@ export function createGameEngine() {
 
   /**
    * Play a single ball.
+   * @param {number} playerGesture - The local player's gesture
+   * @param {number|null} opponentGesture - The opponent's gesture (if multiplayer). If null, CPU generates one.
    */
-  function playBall(playerGesture) {
-    const cpuGesture = cpuPlay();
+  function playBall(playerGesture, opponentGesture = null) {
+    const cpuGesture = opponentGesture !== null ? opponentGesture : cpuPlay();
     const batsman = getCurrentBatsman();
     const bowler = getCurrentBowler();
     const bowlerPower = getCurrentBowlerPower();
@@ -389,9 +391,20 @@ export function createGameEngine() {
     specialDeliveryType = '';
   }
 
+  function setServerTossOverride(player1Bats) {
+    playerBatsFirst = player1Bats;
+    state = 'BATTING';
+    innings = 1;
+    target = null;
+    firstInningsScore = 0;
+    firstInningsScorecard = [];
+    initInnings(playerBatsFirst);
+  }
+
   return {
     setTeams,
     toss,
+    setServerTossOverride,
     playBall,
     startSecondInnings,
     getResult,

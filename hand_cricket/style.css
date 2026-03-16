@@ -42,6 +42,14 @@ body {
 .subtitle { font-size: 0.95rem; color: var(--text-secondary); opacity: 0.7; margin-bottom: 2rem; }
 .hint { margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); opacity: 0.5; }
 
+.start-actions { display: flex; flex-direction: column; gap: 2rem; align-items: center; margin-top: 2rem; }
+.sp-box, .mp-box { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.06); width: 100%; max-width: 400px; }
+.sp-box h3, .mp-box h3 { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; }
+.join-room-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+#join-room-input { flex: 1; background: var(--bg-card-alt); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); padding: 0 1rem; font-family: var(--font); font-size: 1.1rem; text-align: center; outline: none; transition: border-color 0.2s; }
+#join-room-input:focus { border-color: var(--accent-gold); }
+.room-status { font-size: 0.9rem; color: var(--accent-gold); margin-top: 0.5rem; min-height: 1.5em; }
+
 /* --- Buttons --- */
 .btn-primary {
   background: var(--gradient-bat); color: #000; font-family: var(--font); font-weight: 700; font-size: 1.15rem;
@@ -209,7 +217,6 @@ body {
 }
 .ipl-score-row { display: flex; align-items: center; justify-content: center; gap: 1.5rem; }
 .ipl-team-score { text-align: center; }
-.ipl-team-score.batting-team { }
 .ipl-team-name { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.2rem; }
 .ipl-big-score { display: block; font-size: 2.5rem; font-weight: 900; color: var(--accent-green); }
 .ipl-overs { display: block; font-size: 0.8rem; color: var(--text-secondary); }

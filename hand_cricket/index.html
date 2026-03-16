@@ -17,7 +17,26 @@
       <p class="ipl-badge">IPL 2026 Edition</p>
       <p class="tagline">Show your hand. Play the game.</p>
       <p class="subtitle">Real-time gesture recognition • Build your IPL XI • 2 Innings Match</p>
-      <button id="btn-start" class="btn-primary">Build Your Teams 🏟️</button>
+      
+      <div class="start-actions">
+        <!-- Single Player -->
+        <div class="sp-box">
+          <h3>Single Player</h3>
+          <button id="btn-start" class="btn-primary">Play vs CPU 🤖</button>
+        </div>
+        
+        <!-- Multiplayer -->
+        <div class="mp-box">
+          <h3>Multiplayer (Online)</h3>
+          <button id="btn-create-room" class="btn-secondary">Create Room ➕</button>
+          <div class="join-room-row">
+            <input type="text" id="join-room-input" placeholder="Enter 4-digit code" maxlength="4" />
+            <button id="btn-join-room" class="btn-secondary">Join Room 🚪</button>
+          </div>
+          <p id="room-status" class="room-status"></p>
+        </div>
+      </div>
+      
       <p class="hint">Requires webcam access</p>
     </div>
   </div>

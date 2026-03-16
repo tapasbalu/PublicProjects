@@ -1,6 +1,6 @@
 /**
  * main.js
- * IPL Edition — wires team builder, webcam, MediaPipe, game engine, and UI together.
+ * IPL Edition — wires team builder, webcam, MediaPipe, game engine, UI, and multiplayer together.
  */
 
 import { initHandDetector, detectHands, countFingers, drawLandmarks } from './handDetector.js';
@@ -8,9 +8,14 @@ import { createGameEngine } from './gameEngine.js';
 import { renderTeamBuilder } from './teamBuilder.js';
 import { ROLE_ALLOWED_GESTURES } from './iplData.js';
 import {
+  initMultiplayer, createRoom, joinRoom, notifyTeamsReady, sendPlayBall,
+  isMultiplayer, isPlayer1, roomCode
+} from './multiplayer.js';
+import {
   showScreen,
   updateGestureBadge,
   updateBatsmanInfo,
+  updateBowlerInfo,
   updateScoreHeader,
   updateCurrentOver,
   renderScorecard,
@@ -82,27 +87,85 @@ function refreshGameUI() {
   const batsman = game.getCurrentBatsman();
   updateBatsmanInfo(batsman ? { name: batsman.name, role: batsman.role } : null);
 
+  const bowler = game.getCurrentBowler();
+  const bowlerPower = game.getCurrentBowlerPower();
+  updateBowlerInfo(bowler, bowlerPower, game.isSpecialDelivery, game.specialDeliveryType);
+
   renderScorecard(game.scorecard, game.scorecard.findIndex((p) => !p.isOut && game.scorecard.indexOf(p) >= 0));
   updateCurrentOver(game.currentOverBalls);
   renderOverHistory(game.overs);
 }
 
 // =============================================
-// PLAY A SINGLE BALL
+// MULTIPLAYER CALLBACKS
 // =============================================
-async function handlePlayBall() {
-  if (isProcessing) return;
-  if (game.state !== 'BATTING' && game.state !== 'BOWLING') return;
+initMultiplayer({
+  onRoomCreated: (code) => {
+    els.roomStatus.textContent = `Room created! Code: ${code} - Waiting for opponent...`;
+  },
+  onRoomJoined: (code) => {
+    els.roomStatus.textContent = `Joined room ${code}! Waiting for host...`;
+  },
+  onError: (msg) => {
+    els.roomStatus.textContent = `Error: ${msg}`;
+    setTimeout(() => { els.roomStatus.textContent = ''; }, 3000);
+  },
+  onMatchReady: (msg) => {
+    // Both players in room, go to team builder
+    showScreen('teamBuilder');
+    const container = document.getElementById('team-builder-container');
+    renderTeamBuilder(container, (t1, t2) => {
+      // In multiplayer, you only select "Team 1" for yourself
+      // Both t1 and t2 are returned from the UI, but we'll send t1 as our team
+      els.roomStatus.textContent = 'Teams selected, waiting for opponent...';
+      notifyTeamsReady(t1);
+    });
+  },
+  onStartToss: (data) => {
+    // Both players submitted teams
+    const p1Team = data.p1Team;
+    const p2Team = data.p2Team;
+    team1Data = isPlayer1 ? p1Team : p2Team;
+    team2Data = isPlayer1 ? p2Team : p1Team;
+    game.setTeams(team1Data, team2Data);
+    els.tossTeams.textContent = `${team1Data.name} vs ${team2Data.name}`;
+    
+    // In multiplayer, toss is automated or handled here
+    // Let's have Toss just show Teams, and Player 1 starts batting for simplicity
+    showScreen('toss');
+    els.btnToss.textContent = isPlayer1 ? 'Start Match (Bat First)' : 'Start Match (Bowl First)';
+    els.btnToss.onclick = async () => {
+      els.btnToss.disabled = true;
+      els.tossResult.textContent = isPlayer1 ? 'You bat first!' : 'You bowl first!';
+      setTimeout(async () => {
+        // Player 1 bats first
+        game.toss(); // Sets state internally
+        if (!isPlayer1) {
+          game.startSecondInnings(); // Force P2 to bowling state initially? Wait, toss randomly returns.
+          // Actually, if we use a shared seed or server decider...
+          // For simplicity, let's reset game and force P1 to bat
+        }
+      }, 500);
+    };
+  },
+  onBallResult: async (data) => {
+    const localGesture = isPlayer1 ? data.p1Gesture : data.p2Gesture;
+    const remoteGesture = isPlayer1 ? data.p2Gesture : data.p1Gesture;
+    
+    const result = game.playBall(localGesture, remoteGesture);
+    await processBallOutcome(localGesture, remoteGesture, result);
+  },
+  onOpponentLeft: (msg) => {
+    alert(msg);
+    location.reload();
+  }
+});
 
-  isProcessing = true;
-  setPlayBallDisabled(true);
-
-  await runCountdown();
-
-  const playerGesture = currentGesture === -1 ? 0 : currentGesture;
-  const result = game.playBall(playerGesture);
-
-  showLastBall(playerGesture, result.cpuGesture, result.message, result.isOut);
+// =============================================
+// BALL OUTCOME PROCESSING (SP & MP)
+// =============================================
+async function processBallOutcome(playerGesture, cpuGesture, result) {
+  showLastBall(playerGesture, cpuGesture, result.message, result.isOut);
   refreshGameUI();
 
   // Popup for special events
@@ -131,6 +194,29 @@ async function handlePlayBall() {
   } else {
     isProcessing = false;
     setPlayBallDisabled(false);
+    if (isMultiplayer) els.btnPlayBall.textContent = 'Play Ball! 🏏';
+  }
+}
+
+// =============================================
+// PLAY A SINGLE BALL
+// =============================================
+async function handlePlayBall() {
+  if (isProcessing) return;
+  if (game.state !== 'BATTING' && game.state !== 'BOWLING') return;
+
+  isProcessing = true;
+  setPlayBallDisabled(true);
+
+  await runCountdown();
+  const playerGesture = currentGesture === -1 ? 0 : currentGesture;
+
+  if (isMultiplayer) {
+    els.btnPlayBall.textContent = 'Waiting for opponent...';
+    sendPlayBall(playerGesture);
+  } else {
+    const result = game.playBall(playerGesture);
+    await processBallOutcome(playerGesture, result.cpuGesture, result);
   }
 }
 
@@ -138,7 +224,16 @@ async function handlePlayBall() {
 // EVENT LISTENERS
 // =============================================
 function bindEvents() {
-  // Start → Team Builder
+  // Multiplayer Start
+  els.btnCreateRoom.addEventListener('click', () => {
+    createRoom();
+  });
+  els.btnJoinRoom.addEventListener('click', () => {
+    const code = els.joinRoomInput.value.trim();
+    if (code.length === 4) joinRoom(code);
+  });
+
+  // Single Player Start → Team Builder
   document.getElementById('btn-start').addEventListener('click', () => {
     showScreen('teamBuilder');
     const container = document.getElementById('team-builder-container');
@@ -153,9 +248,16 @@ function bindEvents() {
 
   // Toss
   els.btnToss.addEventListener('click', async () => {
-    els.btnToss.disabled = true;
-    const { playerWon, playerBats } = game.toss();
-    await animateToss(playerWon, playerBats);
+    if (isMultiplayer) {
+      game.reset();
+      game.setTeams(team1Data, team2Data);
+      // Hardcoded for MP: P1 bats first
+      game.setServerTossOverride(isPlayer1); 
+    } else {
+      els.btnToss.disabled = true;
+      const { playerWon, playerBats } = game.toss();
+      await animateToss(playerWon, playerBats);
+    }
 
     await setupWebcam();
     await initHandDetector();
@@ -178,13 +280,18 @@ function bindEvents() {
     refreshGameUI();
     isProcessing = false;
     setPlayBallDisabled(false);
+    if (isMultiplayer) els.btnPlayBall.textContent = 'Play Ball! 🏏';
   });
 
   // Replay
   document.getElementById('btn-replay').addEventListener('click', () => {
+    if (isMultiplayer) {
+      alert("Multiplayer replay not supported yet. Please refresh.");
+      location.reload();
+      return;
+    }
     game.reset();
     clearBallLog();
-    // Re-render team builder
     showScreen('teamBuilder');
     const container = document.getElementById('team-builder-container');
     renderTeamBuilder(container, (t1, t2) => {

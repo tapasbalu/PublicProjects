@@ -17,6 +17,12 @@ const screens = {
 };
 
 const els = {
+  // Start / MP
+  btnCreateRoom: $('btn-create-room'),
+  btnJoinRoom: $('btn-join-room'),
+  joinRoomInput: $('join-room-input'),
+  roomStatus: $('room-status'),
+
   // Toss
   coin: $('coin'),
   tossResult: $('toss-result'),
@@ -33,10 +39,14 @@ const els = {
   btnPlayBall: $('btn-play-ball'),
   gestureBadge: $('gesture-badge'),
 
-  // Current batsman
+  // Current batsman & bowler
   batsmanNameDisplay: $('batsman-name-display'),
   batsmanRoleBadge: $('batsman-role-badge'),
   batsmanAllowed: $('batsman-allowed'),
+  bowlerNameDisplay: $('bowler-name-display'),
+  bowlerCapDisplay: $('bowler-cap-display'),
+  specialDeliveryWarning: $('special-delivery-warning'),
+  specialDeliveryText: $('special-delivery-text'),
 
   // Last ball
   lastBall: $('last-ball'),
@@ -99,6 +109,25 @@ export function updateBatsmanInfo(batsman) {
   els.batsmanRoleBadge.textContent = info.label;
   els.batsmanRoleBadge.className = `role-tag ${batsman.role}`;
   els.batsmanAllowed.textContent = `Allowed: ${allowed.join(', ')}`;
+}
+
+/** Update current bowler info and special delivery warnings. */
+export function updateBowlerInfo(bowler, bowlerPower, isSpecial, specialType) {
+  if (!bowler) {
+    els.bowlerNameDisplay.textContent = 'Bowling: CPU';
+    els.bowlerCapDisplay.textContent = 'Max runs: 6';
+    els.specialDeliveryWarning.classList.add('hidden');
+    return;
+  }
+  els.bowlerNameDisplay.textContent = `Bowling: ${bowler.name}`;
+  els.bowlerCapDisplay.textContent = `Max runs: ${bowlerPower.accuracyCap}`;
+
+  if (isSpecial) {
+    els.specialDeliveryWarning.classList.remove('hidden');
+    els.specialDeliveryText.textContent = `⚡ ${specialType.toUpperCase()}! Play 0 or 1 only!`;
+  } else {
+    els.specialDeliveryWarning.classList.add('hidden');
+  }
 }
 
 /** Compute overs string from total balls. */
