@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hand Cricket IPL — Play with Gestures!</title>
+  <meta name="description" content="Play Hand Cricket IPL Edition using real-time hand gesture recognition. Build your dream XI from real IPL 2026 squads!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- SPLASH / START SCREEN -->
+  <div id="start-screen" class="screen active">
+    <div class="start-content">
+      <h1 class="logo">🏏 Hand Cricket</h1>
+      <p class="ipl-badge">IPL 2026 Edition</p>
+      <p class="tagline">Show your hand. Play the game.</p>
+      <p class="subtitle">Real-time gesture recognition • Build your IPL XI • 2 Innings Match</p>
+      <button id="btn-start" class="btn-primary">Build Your Teams 🏟️</button>
+      <p class="hint">Requires webcam access</p>
+    </div>
+  </div>
+
+  <!-- TEAM BUILDER SCREEN -->
+  <div id="team-builder-screen" class="screen">
+    <div id="team-builder-container" class="team-builder-container"></div>
+  </div>
+
+  <!-- TOSS SCREEN -->
+  <div id="toss-screen" class="screen">
+    <div class="toss-content">
+      <h2>Coin Toss</h2>
+      <div class="toss-teams" id="toss-teams"></div>
+      <div id="coin" class="coin">🪙</div>
+      <p id="toss-result" class="toss-result"></p>
+      <button id="btn-toss" class="btn-primary">Flip Coin</button>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen">
+    <div class="game-layout-ipl">
+      <!-- Webcam Side -->
+      <div class="cam-section">
+        <div class="cam-wrapper">
+          <video id="webcam" autoplay playsinline></video>
+          <canvas id="overlay"></canvas>
+          <div id="countdown-overlay" class="countdown-overlay hidden">
+            <span id="countdown-text" class="countdown-text">3</span>
+          </div>
+          <div id="gesture-badge" class="gesture-badge">—</div>
+        </div>
+        <!-- Current Batsman Info -->
+        <div id="current-batsman-info" class="current-batsman-info">
+          <span id="batsman-name-display" class="batsman-name">—</span>
+          <span id="batsman-role-badge" class="role-tag">—</span>
+          <span id="batsman-allowed" class="allowed-gestures">Allowed: —</span>
+        </div>
+        <!-- Bowler Info -->
+        <div id="bowler-info" class="bowler-info">
+          <span id="bowler-name-display" class="bowler-name">Bowling: —</span>
+          <span id="bowler-cap-display" class="bowler-cap">Max runs: 6</span>
+        </div>
+        <!-- Special Delivery Warning -->
+        <div id="special-delivery-warning" class="special-delivery-warning hidden">
+          <span id="special-delivery-text">⚡ YORKER! Play 0 or 1 only!</span>
+        </div>
+        <button id="btn-play-ball" class="btn-primary btn-play">Play Ball! 🏏</button>
+      </div>
+
+      <!-- Scoreboard Side -->
+      <div class="scoreboard-section">
+        <!-- IPL-Style Score Header -->
+        <div class="ipl-score-header">
+          <div class="innings-label" id="innings-label">1st Innings</div>
+          <div class="ipl-score-row">
+            <div class="ipl-team-score batting-team">
+              <span class="ipl-team-name" id="batting-team-name">Team 1</span>
+              <span class="ipl-big-score" id="batting-team-score">0</span>
+              <span class="ipl-overs" id="batting-team-overs">(0.0 ov)</span>
+            </div>
+            <div class="vs">vs</div>
+            <div class="ipl-team-score bowling-team">
+              <span class="ipl-team-name" id="bowling-team-name">Team 2</span>
+              <span class="ipl-target" id="bowling-team-target"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Over Summary Strip -->
+        <div class="over-summary" id="over-summary">
+          <h3>This Over</h3>
+          <div class="over-balls" id="current-over-balls"></div>
+        </div>
+
+        <!-- Last Ball Result -->
+        <div id="last-ball" class="last-ball hidden">
+          <div class="last-ball-inner">
+            <span id="your-gesture-display" class="gesture-num">—</span>
+            <span class="vs-small">vs</span>
+            <span id="cpu-gesture-display" class="gesture-num">—</span>
+          </div>
+          <div id="ball-result-text" class="ball-result-text"></div>
+        </div>
+
+        <!-- IPL Scorecard Table -->
+        <div class="scorecard-panel">
+          <h3>Scorecard</h3>
+          <table class="scorecard-table" id="scorecard-table">
+            <thead>
+              <tr><th>Batsman</th><th>Role</th><th>R</th><th>B</th><th>Status</th></tr>
+            </thead>
+            <tbody id="scorecard-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Over-by-Over History -->
+        <div class="over-history" id="over-history">
+          <h3>Over History</h3>
+          <div id="over-history-list" class="over-history-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INNINGS BREAK SCREEN -->
+  <div id="innings-break-screen" class="screen">
+    <div class="break-content">
+      <h2>Innings Break</h2>
+      <p id="innings-summary"></p>
+      <p id="target-display" class="target-display"></p>
+      <div id="innings-scorecard-preview" class="innings-scorecard-preview"></div>
+      <button id="btn-next-innings" class="btn-primary">Start 2nd Innings</button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen" class="screen">
+    <div class="result-content">
+      <h2 id="result-title">Match Over!</h2>
+      <div id="final-scores" class="final-scores"></div>
+      <p id="result-message" class="result-message"></p>
+      <button id="btn-replay" class="btn-primary">Play Again 🔄</button>
+    </div>
+  </div>
+
+  <!-- Popup Overlay -->
+  <div id="popup-overlay" class="popup-overlay hidden">
+    <div id="popup-text" class="popup-text"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
