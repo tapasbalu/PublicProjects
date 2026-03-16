@@ -116,10 +116,14 @@ initMultiplayer({
     // Both players in room, go to team builder
     showScreen('teamBuilder');
     const container = document.getElementById('team-builder-container');
-    renderTeamBuilder(container, (t1, t2) => {
+    renderTeamBuilder(container, isMultiplayer, (t1, t2) => {
       // In multiplayer, you only select "Team 1" for yourself
       // Both t1 and t2 are returned from the UI, but we'll send t1 as our team
-      els.roomStatus.textContent = 'Teams selected, waiting for opponent...';
+      els.roomStatus.textContent = 'Team selected! Waiting for opponent...';
+      els.roomStatus.classList.remove('hidden');
+      document.getElementById('start-screen').classList.remove('active');
+      document.getElementById('team-builder-screen').classList.add('active'); // stay on screen but wait
+      
       notifyTeamsReady(t1);
     });
   },
@@ -196,7 +200,7 @@ async function processBallOutcome(playerGesture, cpuGesture, result) {
   } else {
     isProcessing = false;
     setPlayBallDisabled(false);
-    if (isMultiplayer) els.btnPlayBall.textContent = 'Play Ball! 🏏';
+    if (isMultiplayer) els.btnPlayBall.textContent = 'Play Ball (Space) 🏏';
   }
 }
 
@@ -242,7 +246,7 @@ function bindEvents() {
   document.getElementById('btn-start').addEventListener('click', () => {
     showScreen('teamBuilder');
     const container = document.getElementById('team-builder-container');
-    renderTeamBuilder(container, (t1, t2) => {
+    renderTeamBuilder(container, isMultiplayer, (t1, t2) => {
       team1Data = t1;
       team2Data = t2;
       game.setTeams(t1, t2);
@@ -299,7 +303,7 @@ function bindEvents() {
     clearBallLog();
     showScreen('teamBuilder');
     const container = document.getElementById('team-builder-container');
-    renderTeamBuilder(container, (t1, t2) => {
+    renderTeamBuilder(container, isMultiplayer, (t1, t2) => {
       team1Data = t1;
       team2Data = t2;
       game.setTeams(t1, t2);

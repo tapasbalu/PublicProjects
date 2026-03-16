@@ -71,12 +71,12 @@ export function getAllPlayers() {
  * @param {HTMLElement} container
  * @param {(team1: SavedTeam, team2: SavedTeam) => void} onTeamsReady
  */
-export function renderTeamBuilder(container, onTeamsReady) {
+export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
   /** @type {Player[]} */
   let team1Players = [];
   /** @type {Player[]} */
   let team2Players = [];
-  let team1Name = 'Team 1';
+  let team1Name = isMultiplayer ? 'My Team' : 'Team 1';
   let team2Name = 'Team 2';
   let activeTeam = 1; // 1 or 2
   let filterFranchise = 'ALL';
@@ -86,9 +86,11 @@ export function renderTeamBuilder(container, onTeamsReady) {
   const saved = loadSavedTeams();
   if (saved) {
     team1Players = saved.team1.players;
-    team2Players = saved.team2.players;
     team1Name = saved.team1.name;
-    team2Name = saved.team2.name;
+    if (!isMultiplayer) {
+      team2Players = saved.team2.players;
+      team2Name = saved.team2.name;
+    }
   }
 
   function render() {
@@ -107,19 +109,19 @@ export function renderTeamBuilder(container, onTeamsReady) {
     }
 
     const v1 = validateTeam(team1Players);
-    const v2 = validateTeam(team2Players);
+    const v2 = isMultiplayer ? { valid: true, errors: [] } : validateTeam(team2Players);
     const bothValid = v1.valid && v2.valid;
 
     container.innerHTML = `
       <div class="tb-wrapper">
-        <h2 class="tb-title">🏏 Build Your Teams</h2>
-        <p class="tb-subtitle">Pick any 10 players per team — more bowlers = stronger bowling attack!</p>
+        <h2 class="tb-title">${isMultiplayer ? '🏏 Build Your Team' : '🏏 Build Your Teams'}</h2>
+        <p class="tb-subtitle">Pick any 10 players — more bowlers = stronger bowling attack!</p>
 
-        <div class="tb-teams-row">
+        <div class="tb-teams-row ${isMultiplayer ? 'single-team' : ''}">
           <!-- Team 1 -->
           <div class="tb-team-card ${activeTeam === 1 ? 'active' : ''}" data-team="1">
             <div class="tb-team-header">
-              <input class="tb-team-name-input" value="${team1Name}" data-team-input="1" placeholder="Team 1 Name" />
+              <input class="tb-team-name-input" value="${team1Name}" data-team-input="1" placeholder="${isMultiplayer ? 'Your Team Name' : 'Team 1 Name'}" />
               <span class="tb-team-count ${v1.valid ? 'valid' : ''}">${team1Players.length}/10</span>
             </div>
             <div class="tb-team-roster" id="roster-1">
@@ -134,7 +136,8 @@ export function renderTeamBuilder(container, onTeamsReady) {
             ${v1.errors.length ? `<div class="tb-errors">${v1.errors.join(' • ')}</div>` : ''}
           </div>
 
-          <!-- Team 2 -->
+          <!-- Team 2 (Hidden if Multiplayer) -->
+          ${!isMultiplayer ? `
           <div class="tb-team-card ${activeTeam === 2 ? 'active' : ''}" data-team="2">
             <div class="tb-team-header">
               <input class="tb-team-name-input" value="${team2Name}" data-team-input="2" placeholder="Team 2 Name" />
@@ -151,6 +154,7 @@ export function renderTeamBuilder(container, onTeamsReady) {
             </div>
             ${v2.errors.length ? `<div class="tb-errors">${v2.errors.join(' • ')}</div>` : ''}
           </div>
+          ` : ''}
         </div>
 
         <!-- Filters -->
@@ -203,7 +207,7 @@ export function renderTeamBuilder(container, onTeamsReady) {
     container.querySelectorAll('.tb-team-name-input').forEach((input) => {
       input.addEventListener('input', (e) => {
         if (e.target.dataset.teamInput === '1') team1Name = e.target.value;
-        else team2Name = e.target.value;
+        else if (!isMultiplayer) team2Name = e.target.value;
       });
     });
 
@@ -214,7 +218,7 @@ export function renderTeamBuilder(container, onTeamsReady) {
         const teamNum = parseInt(btn.dataset.remove);
         const idx = parseInt(btn.dataset.idx);
         if (teamNum === 1) team1Players.splice(idx, 1);
-        else team2Players.splice(idx, 1);
+        else if (!isMultiplayer) team2Players.splice(idx, 1);
         render();
       });
     });
@@ -225,6 +229,7 @@ export function renderTeamBuilder(container, onTeamsReady) {
         const name = el.dataset.player;
         const role = el.dataset.role;
         const target = activeTeam === 1 ? team1Players : team2Players;
+        if (target === team2Players && isMultiplayer) return; // safeguard
         if (target.length >= 10) return;
         target.push({ name, role });
         render();

@@ -73,6 +73,7 @@ body {
 .tb-subtitle { font-size: 0.95rem; text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; }
 
 .tb-teams-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.tb-teams-row.single-team { grid-template-columns: minmax(300px, 600px); justify-content: center; }
 .tb-team-card {
   background: var(--bg-card); border-radius: var(--radius); padding: 1rem;
   border: 2px solid rgba(255,255,255,0.06); cursor: pointer; transition: border-color 0.2s;
