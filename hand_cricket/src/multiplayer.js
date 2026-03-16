@@ -30,7 +30,9 @@ export function initMultiplayer(options) {
 
   // Dynamically resolve the hostname so local network and production multiplayer works
   const host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1') {
+  const port = window.location.port;
+  
+  if (port === '5173' || port === '3001') {
     // Local development: connect to Node.js backend on port 3001
     socket = io(`http://${host}:3001`);
   } else {

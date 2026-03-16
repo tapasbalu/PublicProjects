@@ -101,7 +101,9 @@ function refreshGameUI() {
 // =============================================
 initMultiplayer({
   onRoomCreated: (code) => {
-    els.roomStatus.textContent = `Room created! Code: ${code} - Waiting for opponent...`;
+    els.roomStatus.innerHTML = `<span style="display:block; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px;">Room created! Share this code:</span><span style="display:block; font-size: 2.5rem; font-weight: 900; color: var(--accent-green); letter-spacing: 4px; border: 2px dashed rgba(0,230,118,0.5); padding: 10px; border-radius: var(--radius-sm); background: rgba(0,230,118,0.1);">${code}</span><span style="display:block; font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">Waiting for opponent...</span>`;
+    els.btnCreateRoom.classList.add('hidden');
+    document.querySelector('.join-room-row').classList.add('hidden');
   },
   onRoomJoined: (code) => {
     els.roomStatus.textContent = `Joined room ${code}! Waiting for host...`;
