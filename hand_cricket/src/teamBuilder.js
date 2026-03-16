@@ -125,7 +125,10 @@ export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
           <div class="tb-team-card ${activeTeam === 1 ? 'active' : ''}" data-team="1">
             <div class="tb-team-header">
               <input class="tb-team-name-input" value="${team1Name}" data-team-input="1" placeholder="${isMultiplayer ? 'Your Team Name' : 'Team 1 Name'}" />
-              <span class="tb-team-count ${v1.valid ? 'valid' : ''}">${team1Players.length}/10</span>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="tb-randomize-p1" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">🎲 Random</button>
+                <span class="tb-team-count ${v1.valid ? 'valid' : ''}">${team1Players.length}/10</span>
+              </div>
             </div>
             <div class="tb-team-roster" id="roster-1">
               ${team1Players.map((p, i) => `
@@ -268,10 +271,10 @@ export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
       });
     }
 
-    // Random CPU button
-    const randomBtn = container.querySelector('#tb-randomize-cpu');
-    if (randomBtn && !isMultiplayer) {
-      randomBtn.addEventListener('click', (e) => {
+    // Random CPU button (Team 2)
+    const randomBtn2 = container.querySelector('#tb-randomize-cpu');
+    if (randomBtn2 && !isMultiplayer) {
+      randomBtn2.addEventListener('click', (e) => {
         e.stopPropagation();
         const allPlayers = getAllPlayers();
         const t1Names = new Set(team1Players.map(p => p.name));
@@ -293,6 +296,40 @@ export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
         const allr = shuffle(available.filter(p => p.role === 'allrounder'));
 
         team2Players = [
+          ...bats.slice(0, 5),
+          ...allr.slice(0, 2),
+          ...bowls.slice(0, 3)
+        ].map(p => ({ name: p.name, role: p.role }));
+        
+        render();
+      });
+    }
+
+    // Random Player button (Team 1)
+    const randomBtn1 = container.querySelector('#tb-randomize-p1');
+    if (randomBtn1) {
+      randomBtn1.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const allPlayers = getAllPlayers();
+        const t2Names = new Set(team2Players.map(p => p.name));
+        const available = allPlayers.filter(p => !t2Names.has(p.name));
+        
+        // Shuffle helper
+        const shuffle = (array) => {
+          let curr = array.length, rand;
+          while (curr != 0) {
+            rand = Math.floor(Math.random() * curr);
+            curr--;
+            [array[curr], array[rand]] = [array[rand], array[curr]];
+          }
+          return array;
+        };
+
+        const bats = shuffle(available.filter(p => p.role === 'batsman' || p.role === 'wicketkeeper'));
+        const bowls = shuffle(available.filter(p => p.role === 'bowler'));
+        const allr = shuffle(available.filter(p => p.role === 'allrounder'));
+
+        team1Players = [
           ...bats.slice(0, 5),
           ...allr.slice(0, 2),
           ...bowls.slice(0, 3)
