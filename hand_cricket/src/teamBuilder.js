@@ -49,6 +49,9 @@ export function validateTeam(players) {
   if (players.length !== TEAM_TOTAL) {
     errors.push(`Need exactly ${TEAM_TOTAL} players (have ${players.length})`);
   }
+  if (counts.allrounder > 2) {
+    errors.push(`Max 2 All-Rounders allowed (have ${counts.allrounder})`);
+  }
   return { valid: errors.length === 0, counts, errors };
 }
 
@@ -115,7 +118,7 @@ export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
     container.innerHTML = `
       <div class="tb-wrapper">
         <h2 class="tb-title">${isMultiplayer ? '🏏 Build Your Team' : '🏏 Build Your Teams'}</h2>
-        <p class="tb-subtitle">Pick any 10 players — more bowlers = stronger bowling attack!</p>
+        <p class="tb-subtitle">Pick exactly 10 players (Max 2 All-Rounders). More bowlers = stronger bowling attack!</p>
 
         <div class="tb-teams-row ${isMultiplayer ? 'single-team' : ''}">
           <!-- Team 1 -->
