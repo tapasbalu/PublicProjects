@@ -141,7 +141,10 @@ export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
           <div class="tb-team-card ${activeTeam === 2 ? 'active' : ''}" data-team="2">
             <div class="tb-team-header">
               <input class="tb-team-name-input" value="${team2Name}" data-team-input="2" placeholder="Team 2 Name" />
-              <span class="tb-team-count ${v2.valid ? 'valid' : ''}">${team2Players.length}/10</span>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="tb-randomize-cpu" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">🎲 Random CPU</button>
+                <span class="tb-team-count ${v2.valid ? 'valid' : ''}">${team2Players.length}/10</span>
+              </div>
             </div>
             <div class="tb-team-roster" id="roster-2">
               ${team2Players.map((p, i) => `
@@ -259,6 +262,40 @@ export function renderTeamBuilder(container, isMultiplayer, onTeamsReady) {
         saveTeams({ name: team1Name, players: team1Players }, { name: team2Name, players: team2Players });
         saveBtn.textContent = '✅ Saved!';
         setTimeout(() => { saveBtn.textContent = '💾 Save Teams'; }, 1500);
+      });
+    }
+
+    // Random CPU button
+    const randomBtn = container.querySelector('#tb-randomize-cpu');
+    if (randomBtn && !isMultiplayer) {
+      randomBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const allPlayers = getAllPlayers();
+        const t1Names = new Set(team1Players.map(p => p.name));
+        const available = allPlayers.filter(p => !t1Names.has(p.name));
+        
+        // Shuffle helper
+        const shuffle = (array) => {
+          let curr = array.length, rand;
+          while (curr != 0) {
+            rand = Math.floor(Math.random() * curr);
+            curr--;
+            [array[curr], array[rand]] = [array[rand], array[curr]];
+          }
+          return array;
+        };
+
+        const bats = shuffle(available.filter(p => p.role === 'batsman' || p.role === 'wicketkeeper'));
+        const bowls = shuffle(available.filter(p => p.role === 'bowler'));
+        const allr = shuffle(available.filter(p => p.role === 'allrounder'));
+
+        team2Players = [
+          ...bats.slice(0, 5),
+          ...allr.slice(0, 2),
+          ...bowls.slice(0, 3)
+        ].map(p => ({ name: p.name, role: p.role }));
+        
+        render();
       });
     }
 
