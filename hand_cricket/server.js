@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 3001;
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Catch-all to serve index.html for SPA routing
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
