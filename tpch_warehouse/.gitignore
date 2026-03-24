@@ -1,0 +1,8 @@
+
+target/
+dbt_packages/
+logs/
+
+# NEVER commit credentials to Git
+profiles.yml
+.env

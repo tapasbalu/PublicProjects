@@ -1,0 +1,148 @@
+version: 2
+
+sources:
+  - name: tpch
+    database: SNOWFLAKE_SAMPLE_DATA
+    schema: TPCH_SF1
+    description: "TPC-H benchmark dataset representing a wholesale supplier business."
+
+    tables:
+      - name: orders
+        description: "Order headers — one row per order placed by a customer."
+        columns:
+          - name: o_orderkey
+            description: "Primary key — unique order identifier."
+          - name: o_custkey
+            description: "Foreign key to customer."
+          - name: o_orderstatus
+            description: "Order status: O (open), F (fulfilled), P (partial)."
+          - name: o_totalprice
+            description: "Total monetary value of the order."
+          - name: o_orderdate
+            description: "Date the order was placed."
+          - name: o_orderpriority
+            description: "Priority level of the order."
+          - name: o_clerk
+            description: "Clerk who processed the order."
+          - name: o_shippriority
+            description: "Shipping priority flag."
+          - name: o_comment
+            description: "Free-text comment."
+
+      - name: lineitem
+        description: "Line items — one row per product within an order."
+        columns:
+          - name: l_orderkey
+            description: "Foreign key to orders."
+          - name: l_partkey
+            description: "Foreign key to part."
+          - name: l_suppkey
+            description: "Foreign key to supplier."
+          - name: l_linenumber
+            description: "Line number within the order."
+          - name: l_quantity
+            description: "Quantity of the part ordered."
+          - name: l_extendedprice
+            description: "Gross revenue before discounts and tax."
+          - name: l_discount
+            description: "Discount fraction applied (e.g. 0.05 = 5%)."
+          - name: l_tax
+            description: "Tax fraction applied."
+          - name: l_returnflag
+            description: "Return flag: R (returned), A (accepted), N (none)."
+          - name: l_linestatus
+            description: "Line status: O (open) or F (fulfilled)."
+          - name: l_shipdate
+            description: "Date the item was shipped."
+          - name: l_commitdate
+            description: "Committed delivery date."
+          - name: l_receiptdate
+            description: "Date the item was received."
+          - name: l_shipinstruct
+            description: "Shipping instructions."
+          - name: l_shipmode
+            description: "Shipping mode (AIR, TRUCK, MAIL, etc.)."
+          - name: l_comment
+            description: "Free-text comment."
+
+      - name: customer
+        description: "Customer dimension — one row per customer."
+        columns:
+          - name: c_custkey
+            description: "Primary key — unique customer identifier."
+          - name: c_name
+            description: "Customer name."
+          - name: c_address
+            description: "Customer mailing address."
+          - name: c_nationkey
+            description: "Foreign key to nation."
+          - name: c_phone
+            description: "Customer phone number."
+          - name: c_acctbal
+            description: "Account balance."
+          - name: c_mktsegment
+            description: "Market segment (AUTOMOBILE, BUILDING, FURNITURE, etc.)."
+          - name: c_comment
+            description: "Free-text comment."
+
+      - name: part
+        description: "Product catalog — one row per part."
+        columns:
+          - name: p_partkey
+            description: "Primary key — unique part identifier."
+          - name: p_name
+            description: "Part name."
+          - name: p_mfgr
+            description: "Manufacturer."
+          - name: p_brand
+            description: "Brand."
+          - name: p_type
+            description: "Part type description."
+          - name: p_size
+            description: "Part size."
+          - name: p_container
+            description: "Packaging container type."
+          - name: p_retailprice
+            description: "Retail price."
+          - name: p_comment
+            description: "Free-text comment."
+
+      - name: supplier
+        description: "Supplier dimension — one row per supplier."
+        columns:
+          - name: s_suppkey
+            description: "Primary key — unique supplier identifier."
+          - name: s_name
+            description: "Supplier name."
+          - name: s_address
+            description: "Supplier address."
+          - name: s_nationkey
+            description: "Foreign key to nation."
+          - name: s_phone
+            description: "Supplier phone number."
+          - name: s_acctbal
+            description: "Account balance."
+          - name: s_comment
+            description: "Free-text comment."
+
+      - name: nation
+        description: "Nation dimension — one row per country."
+        columns:
+          - name: n_nationkey
+            description: "Primary key — unique nation identifier."
+          - name: n_name
+            description: "Nation name."
+          - name: n_regionkey
+            description: "Foreign key to region."
+          - name: n_comment
+            description: "Free-text comment."
+
+      - name: region
+        description: "Region dimension — one row per geographic region."
+        columns:
+          - name: r_regionkey
+            description: "Primary key — unique region identifier."
+          - name: r_name
+            description: "Region name (AFRICA, AMERICA, ASIA, EUROPE, MIDDLE EAST)."
+          - name: r_comment
+            description: "Free-text comment."
